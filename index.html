@@ -3,9 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#09090f">
+
     <title>Undercover</title>
+
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <h1>Undercover</h1>
+
+    <div class="background-glow glow-1"></div>
+    <div class="background-glow glow-2"></div>
+
+    <main class="app">
+
+        <!-- LOGO -->
+        <header class="header">
+            <div class="logo-icon">?</div>
+
+            <h1>UNDERCOVER</h1>
+
+            <p>
+                Tout le monde connaît le personnage.<br>
+                Sauf l'un d'entre vous.
+            </p>
+        </header>
+
+
+        <!-- CARTE PRINCIPALE -->
+        <section class="game-card">
+
+            <div class="field">
+                <label for="pseudo">TON PSEUDO</label>
+
+                <input
+                    type="text"
+                    id="pseudo"
+                    placeholder="Entre ton pseudo"
+                    maxlength="16"
+                    autocomplete="off"
+                >
+            </div>
+
+
+            <button id="createGame" class="btn btn-primary">
+                <span class="btn-icon">＋</span>
+
+                <span>
+                    <strong>Créer un salon</strong>
+                    <small>Invite tes amis</small>
+                </span>
+            </button>
+
+
+            <div class="separator">
+                <span>OU</span>
+            </div>
+
+
+            <div class="field">
+                <label for="roomCode">CODE DU SALON</label>
+
+                <input
+                    type="text"
+                    id="roomCode"
+                    class="code-input"
+                    placeholder="ABCDE"
+                    maxlength="5"
+                    autocomplete="off"
+                >
+            </div>
+
+
+            <button id="joinGame" class="btn btn-secondary">
+                <span class="btn-icon">→</span>
+
+                <span>
+                    <strong>Rejoindre</strong>
+                    <small>Entre dans la partie</small>
+                </span>
+            </button>
+
+        </section>
+
+
+        <footer>
+            <span class="status-dot"></span>
+            Prêt à jouer
+        </footer>
+
+    </main>
+
+
+    <!-- NOTIFICATION -->
+    <div id="notification" class="notification"></div>
+
+
+    <script src="script.js"></script>
+
 </body>
 </html>

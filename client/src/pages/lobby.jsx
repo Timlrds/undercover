@@ -35,69 +35,144 @@ function Lobby() {
 
     useEffect(() => {
 
-        function updateRoom(data) {
+    // ==============================
+    // MISE À JOUR DU SALON
+    // ==============================
 
-            setPlayers(
-                data.players || []
-            );
+    function updateRoom(data) {
 
-            setHostId(
-                data.host
-            );
+        setPlayers(
+            data.players || []
+        );
+
+        setHostId(
+            data.host
+        );
+
+        // Récupère aussi les paramètres
+        if (data.settings) {
+            setSettings(data.settings);
         }
+    }
 
 
-        function roomError(message) {
+    // ==============================
+    // ERREUR SALON
+    // ==============================
 
-            setError(message);
+    function roomError(message) {
+        setError(message);
+    }
+
+
+    // ==============================
+    // PARTIE LANCÉE
+    // ==============================
+
+    function handleGameStarted(data) {
+
+        // On stocke uniquement le mot reçu
+        sessionStorage.setItem(
+            "gameWord",
+            data.word
+        );
+
+        // Direction page de jeu
+        navigate(
+            `/game/${data.roomCode}`
+        );
+    }
+
+
+    // ==============================
+    // ERREUR LANCEMENT
+    // ==============================
+
+    function handleGameError(message) {
+
+        setError(message);
+
+        setTimeout(() => {
+            setError("");
+        }, 3000);
+    }
+
+
+    // ==============================
+    // ÉCOUTE SOCKET
+    // ==============================
+
+    socket.on(
+        "roomData",
+        updateRoom
+    );
+
+    socket.on(
+        "roomUpdated",
+        updateRoom
+    );
+
+    socket.on(
+        "roomError",
+        roomError
+    );
+
+    socket.on(
+        "gameStarted",
+        handleGameStarted
+    );
+
+    socket.on(
+        "gameError",
+        handleGameError
+    );
+
+
+    // ==============================
+    // DEMANDE LES INFOS DU SALON
+    // ==============================
+
+    socket.emit(
+        "getRoom",
+        {
+            roomCode: code
         }
+    );
 
 
-        socket.on(
+    // ==============================
+    // NETTOYAGE
+    // ==============================
+
+    return () => {
+
+        socket.off(
             "roomData",
             updateRoom
         );
 
-        socket.on(
+        socket.off(
             "roomUpdated",
             updateRoom
         );
 
-        socket.on(
+        socket.off(
             "roomError",
             roomError
         );
 
-
-        // Demande l'état actuel du salon
-
-        socket.emit(
-            "getRoom",
-            {
-                roomCode: code
-            }
+        socket.off(
+            "gameStarted",
+            handleGameStarted
         );
 
+        socket.off(
+            "gameError",
+            handleGameError
+        );
+    };
 
-        return () => {
-
-            socket.off(
-                "roomData",
-                updateRoom
-            );
-
-            socket.off(
-                "roomUpdated",
-                updateRoom
-            );
-
-            socket.off(
-                "roomError",
-                roomError
-            );
-        };
-
-    }, [code]);
+}, [code, navigate]);
 
 
     // ==============================
@@ -158,15 +233,17 @@ function Lobby() {
 
     function startGame() {
 
-        if (!isHost) {
-            return;
-        }
-
-        console.log(
-            "Lancement partie",
-            code
-        );
+    if (!isHost) {
+        return;
     }
+
+    socket.emit(
+        "startGame",
+        {
+            roomCode: code
+        }
+    );
+}
 
 
     // ==============================

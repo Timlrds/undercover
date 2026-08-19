@@ -1308,3 +1308,548 @@ input {
     }
 
 }
+
+/* ================================================= */
+/* PAGE DE RÉVÉLATION                                */
+/* ================================================= */
+
+.game-page {
+    position: relative;
+
+    min-height: 100vh;
+
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    background:
+        radial-gradient(
+            circle at 50% 40%,
+            #171527 0%,
+            #0d0c15 40%,
+            #08080d 100%
+        );
+
+    color: white;
+}
+
+
+/* GLOWS */
+
+.game-background {
+    position: absolute;
+
+    width: 500px;
+    height: 500px;
+
+    border-radius: 50%;
+
+    filter: blur(130px);
+
+    opacity: .16;
+
+    pointer-events: none;
+}
+
+.game-glow-1 {
+    top: -200px;
+    left: -150px;
+
+    background: #765cff;
+}
+
+.game-glow-2 {
+    right: -180px;
+    bottom: -220px;
+
+    background: #5335ff;
+}
+
+
+/* HEADER */
+
+.game-header {
+    position: relative;
+    z-index: 2;
+
+    width: 100%;
+
+    padding: 28px 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+
+.game-logo {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #765cff,
+            #5135dc
+        );
+
+    box-shadow:
+        0 8px 30px
+        rgba(118, 92, 255, .25);
+
+    font-size: 21px;
+    font-weight: 900;
+}
+
+
+.game-room {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 9px 14px;
+
+    border:
+        1px solid rgba(255,255,255,.07);
+
+    border-radius: 10px;
+
+    background:
+        rgba(255,255,255,.025);
+}
+
+
+.game-room span {
+    color: #555563;
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 2px;
+}
+
+
+.game-room strong {
+    color: #9d8dff;
+
+    font-size: 12px;
+
+    letter-spacing: 2px;
+}
+
+
+/* CONTENU */
+
+.reveal-section {
+    position: relative;
+    z-index: 2;
+
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px 20px 80px;
+}
+
+
+.reveal-title {
+    margin-bottom: 35px;
+
+    text-align: center;
+}
+
+
+.reveal-title > span {
+    color: #765cff;
+
+    font-size: 9px;
+    font-weight: 900;
+
+    letter-spacing: 4px;
+}
+
+
+.reveal-title h1 {
+    margin: 8px 0 7px;
+
+    font-size: clamp(
+        28px,
+        4vw,
+        42px
+    );
+
+    letter-spacing: -1px;
+}
+
+
+.reveal-title p {
+    margin: 0;
+
+    color: #656573;
+
+    font-size: 12px;
+}
+
+
+/* ================================================ */
+/* CARTE                                            */
+/* ================================================ */
+
+.secret-card {
+    position: relative;
+
+    width: min(370px, 90vw);
+    height: 470px;
+
+    user-select: none;
+    -webkit-user-select: none;
+
+    cursor: pointer;
+
+    border:
+        1px solid rgba(255,255,255,.08);
+
+    border-radius: 28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #171722,
+            #101018
+        );
+
+    box-shadow:
+        0 35px 80px
+        rgba(0,0,0,.45),
+        inset 0 1px 0
+        rgba(255,255,255,.04);
+
+    transition:
+        transform .2s ease,
+        border-color .2s ease,
+        box-shadow .2s ease;
+
+    overflow: hidden;
+}
+
+
+.secret-card::before {
+    content: "";
+
+    position: absolute;
+
+    width: 230px;
+    height: 230px;
+
+    left: 50%;
+    top: 50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    background:
+        rgba(118,92,255,.09);
+
+    filter: blur(45px);
+}
+
+
+.secret-card:hover {
+    transform: translateY(-4px);
+
+    border-color:
+        rgba(118,92,255,.25);
+}
+
+
+.secret-card-revealed {
+    transform:
+        translateY(-4px)
+        scale(1.015);
+
+    border-color:
+        rgba(118,92,255,.6);
+
+    box-shadow:
+        0 40px 100px
+        rgba(0,0,0,.5),
+        0 0 55px
+        rgba(118,92,255,.13);
+}
+
+
+/* CONTENU CARTE */
+
+.secret-hidden,
+.secret-revealed {
+    position: relative;
+    z-index: 2;
+
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.secret-question {
+    width: 90px;
+    height: 90px;
+
+    margin-bottom: 35px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+        1px solid rgba(118,92,255,.3);
+
+    border-radius: 26px;
+
+    background:
+        rgba(118,92,255,.08);
+
+    color: #8d79ff;
+
+    font-size: 42px;
+    font-weight: 900;
+
+    box-shadow:
+        0 0 50px
+        rgba(118,92,255,.08);
+}
+
+
+.secret-hidden > span {
+    color: #d8d8df;
+
+    font-size: 11px;
+    font-weight: 900;
+
+    letter-spacing: 2px;
+}
+
+
+.secret-hidden small {
+    margin-top: 9px;
+
+    color: #4d4d5a;
+
+    font-size: 10px;
+}
+
+
+/* MOT RÉVÉLÉ */
+
+.secret-revealed > span {
+    margin-bottom: 20px;
+
+    color: #6d5aff;
+
+    font-size: 9px;
+    font-weight: 900;
+
+    letter-spacing: 4px;
+}
+
+
+.secret-revealed h2 {
+    max-width: 90%;
+
+    margin: 0;
+
+    color: white;
+
+    text-align: center;
+
+    font-size: clamp(
+        32px,
+        6vw,
+        52px
+    );
+
+    line-height: 1;
+
+    letter-spacing: -1.5px;
+
+    text-transform: uppercase;
+}
+
+
+.secret-revealed small {
+    margin-top: 24px;
+
+    color: #555563;
+
+    font-size: 10px;
+
+    letter-spacing: 1px;
+}
+
+
+/* INFO SOUS LA CARTE */
+
+.reveal-warning {
+    margin-top: 25px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    color: #555563;
+}
+
+
+.reveal-warning span {
+    color: #765cff;
+
+    font-size: 9px;
+}
+
+
+.reveal-warning p {
+    margin: 0;
+
+    font-size: 10px;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+    .game-header {
+        padding: 20px;
+    }
+
+    .secret-card {
+        height: 430px;
+    }
+
+    .reveal-section {
+        padding-bottom: 40px;
+    }
+}
+
+/* ============================================= */
+/* JOUEURS PRÊTS                                 */
+/* ============================================= */
+
+.ready-area {
+    width: min(370px, 90vw);
+    margin-top: 25px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 14px;
+}
+
+
+.ready-button {
+    width: 100%;
+
+    padding: 17px 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    border: none;
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #765cff,
+            #593fe0
+        );
+
+    color: white;
+
+    font-size: 11px;
+    font-weight: 900;
+
+    letter-spacing: 1.5px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 10px 35px
+        rgba(118, 92, 255, .22);
+
+    transition: .15s;
+}
+
+
+.ready-button:hover {
+    transform: translateY(-2px);
+}
+
+
+.ready-button-done {
+    background:
+        rgba(118, 92, 255, .10);
+
+    border:
+        1px solid
+        rgba(118, 92, 255, .25);
+
+    color: #9685ff;
+
+    box-shadow: none;
+
+    cursor: default;
+}
+
+
+.ready-button-done:hover {
+    transform: none;
+}
+
+
+.ready-counter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 6px;
+}
+
+
+.ready-counter span {
+    color: #555563;
+
+    font-size: 10px;
+}
+
+
+.ready-counter strong {
+    color: #8d7aff;
+
+    font-size: 9px;
+    font-weight: 900;
+
+    letter-spacing: 2px;
+}

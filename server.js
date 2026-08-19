@@ -91,15 +91,15 @@ io.on("connection", (socket) => {
 
         // Réponse au créateur
         socket.emit("roomCreated", {
+    roomCode,
+    players: room.players,
+    host: room.host,
+    settings: room.settings
+});
 
-            roomCode,
-
-            players: room.players,
-
-            host: room.host,
-
-            settings: room.settings
-        });
+console.log(
+    `🎮 Salon ${roomCode} créé par ${pseudo}`
+);
 
 
         console.log(
@@ -365,6 +365,375 @@ io.on("connection", (socket) => {
     );
 
 
+    // ======================================
+// LANCER UNE PARTIE
+// ======================================
+
+socket.on("startGame", ({ roomCode }) => {
+
+    if (!roomCode) {
+        return;
+    }
+
+    roomCode = roomCode
+        .trim()
+        .toUpperCase();
+
+    const room = rooms[roomCode];
+
+
+    // ==============================
+    // SALON EXISTANT ?
+    // ==============================
+
+    if (!room) {
+
+        socket.emit(
+            "gameError",
+            "Ce salon n'existe plus."
+        );
+
+        return;
+    }
+
+
+    // ==============================
+    // SEUL LE CHEF PEUT LANCER
+    // ==============================
+
+    if (room.host !== socket.id) {
+
+        socket.emit(
+            "gameError",
+            "Seul le chef peut lancer la partie."
+        );
+
+        return;
+    }
+
+
+    // ==============================
+    // MINIMUM 3 JOUEURS
+    // ==============================
+
+    if (room.players.length < 3) {
+
+        socket.emit(
+            "gameError",
+            "Il faut au moins 3 joueurs pour commencer."
+        );
+
+        return;
+    }
+
+
+    // ==============================
+    // CARTES DISPONIBLES
+    // ==============================
+
+    const availableCards = cards.filter((card) => {
+
+        return room.settings.themes.includes(
+            card.theme
+        );
+
+    });
+
+
+    if (availableCards.length === 0) {
+
+        socket.emit(
+            "gameError",
+            "Aucune carte disponible avec ces thèmes."
+        );
+
+        return;
+    }
+
+
+    // ==============================
+    // CHOISIR UNE CARTE
+    // ==============================
+
+    const selectedCard =
+        availableCards[
+            Math.floor(
+                Math.random() *
+                availableCards.length
+            )
+        ];
+
+
+    // ==============================
+    // CHOISIR L'UNDERCOVER
+    // ==============================
+
+    const undercover =
+        room.players[
+            Math.floor(
+                Math.random() *
+                room.players.length
+            )
+        ];
+
+
+    // ==============================
+    // CHOISIR L'INDICE
+    // ==============================
+
+    const difficulty =
+        room.settings.difficulty || "normal";
+
+
+    const clue =
+        selectedCard.clues?.[difficulty]
+        ?? selectedCard.clue;
+
+
+    if (!clue) {
+
+        socket.emit(
+            "gameError",
+            "Cette carte ne possède pas d'indice valide."
+        );
+
+        return;
+    }
+
+
+    // Compatible avec l'ancien "character"
+    // et notre futur système "answer".
+
+    const answer =
+        selectedCard.answer ??
+        selectedCard.character;
+
+
+    // ==============================
+    // STOCKER LA PARTIE
+    // ==============================
+
+    room.game = {
+    status: "reveal",
+
+    answer: answer,
+    clue: clue,
+    theme: selectedCard.theme,
+
+    undercoverId: undercover.id,
+
+    readyPlayers: [],
+
+    speakingOrder: [],
+
+    currentRound: 0,
+    currentSpeakerIndex: 0,
+
+    startedAt: Date.now()
+};
+
+
+    console.log("");
+    console.log(`🎲 PARTIE ${roomCode}`);
+    console.log(`🎴 Réponse : ${answer}`);
+    console.log(`💡 Indice : ${clue}`);
+    console.log(`🕵️ Undercover : ${undercover.pseudo}`);
+    console.log("");
+
+
+    // ==============================
+    // ENVOI INDIVIDUEL
+    // ==============================
+
+    room.players.forEach((player) => {
+
+        const isUndercover =
+            player.id === undercover.id;
+
+
+        // IMPORTANT :
+        // chaque joueur reçoit seulement
+        // SON propre mot.
+
+        io.to(player.id).emit(
+            "gameStarted",
+            {
+                roomCode: roomCode,
+
+                word: isUndercover
+                    ? clue
+                    : answer
+            }
+        );
+
+    });
+
+});
+
+
+// ======================================
+// JOUEUR PRÊT APRÈS AVOIR VU SON MOT
+// ======================================
+
+socket.on("playerReady", ({ roomCode }) => {
+
+    if (!roomCode) {
+        return;
+    }
+
+    roomCode = roomCode
+        .trim()
+        .toUpperCase();
+
+    const room = rooms[roomCode];
+
+    if (!room || !room.game) {
+        return;
+    }
+
+
+    // Vérifie que le joueur appartient au salon
+    const player = room.players.find(
+        player => player.id === socket.id
+    );
+
+    if (!player) {
+        return;
+    }
+
+
+    // Évite de compter deux fois le même joueur
+    if (!room.game.readyPlayers.includes(socket.id)) {
+
+        room.game.readyPlayers.push(socket.id);
+    }
+
+
+    // Envoie le compteur à tout le monde
+    io.to(roomCode).emit("readyUpdated", {
+
+        readyCount:
+            room.game.readyPlayers.length,
+
+        totalPlayers:
+            room.players.length
+    });
+
+
+    console.log(
+        `✅ ${player.pseudo} est prêt ` +
+        `(${room.game.readyPlayers.length}/${room.players.length})`
+    );
+
+
+    // Tout le monde n'est pas encore prêt
+    if (
+        room.game.readyPlayers.length !==
+        room.players.length
+    ) {
+        return;
+    }
+
+
+    // ==================================
+    // TOUT LE MONDE EST PRÊT
+    // ==================================
+
+    // Copie des joueurs
+    const speakingOrder = [
+        ...room.players
+    ];
+
+
+    // Mélange aléatoire
+    for (
+        let i = speakingOrder.length - 1;
+        i > 0;
+        i--
+    ) {
+
+        const j =
+            Math.floor(
+                Math.random() * (i + 1)
+            );
+
+        [
+            speakingOrder[i],
+            speakingOrder[j]
+        ] = [
+            speakingOrder[j],
+            speakingOrder[i]
+        ];
+    }
+
+
+    // On ne stocke que les IDs
+    room.game.speakingOrder =
+        speakingOrder.map(
+            player => player.id
+        );
+
+
+    room.game.status = "discussion";
+
+    room.game.currentRound = 1;
+
+    room.game.currentSpeakerIndex = 0;
+
+
+    const firstPlayer =
+        speakingOrder[0];
+
+
+    console.log("");
+    console.log(
+        `🗣️ Discussion ${roomCode}`
+    );
+
+    console.log(
+        "Ordre :",
+        speakingOrder
+            .map(player => player.pseudo)
+            .join(" → ")
+    );
+
+    console.log("Tour : 1/3");
+
+    console.log(
+        `Premier joueur : ${firstPlayer.pseudo}`
+    );
+
+    console.log("");
+
+
+    // IMPORTANT :
+    // aucune information sur les mots
+    // ou l'Undercover n'est envoyée.
+
+    io.to(roomCode).emit(
+        "discussionStarted",
+        {
+
+            round: 1,
+
+            maxInitialRounds: 3,
+
+            speakingOrder:
+                speakingOrder.map(
+                    player => ({
+                        id: player.id,
+                        pseudo: player.pseudo
+                    })
+                ),
+
+            currentSpeakerId:
+                firstPlayer.id
+        }
+    );
+
+});
+
+
 
     // ======================================
     // QUITTER VOLONTAIREMENT LE SALON
@@ -432,6 +801,8 @@ io.on("connection", (socket) => {
     });
 
 });
+
+
 
 
 
